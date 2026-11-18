@@ -1,0 +1,25 @@
+{
+  "name": "airplop",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AirPlop - Cross-platform P2P file & text transfer in your browser with Glassmorphism UI and EN/VI support",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "start:prod": "node server/index.js --rate-limit --auto-restart",
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "jszip": "^3.10.1",
+    "qrcode-generator": "^1.4.4",
+    "ua-parser-js": "^1.0.40",
+    "unique-names-generator": "^4.7.1",
+    "ws": "^8.18.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

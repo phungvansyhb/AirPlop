@@ -1,0 +1,11 @@
+services:
+  airplop:
+    build: .
+    container_name: airplop
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - RATE_LIMIT=false
+      - WS_FALLBACK=true

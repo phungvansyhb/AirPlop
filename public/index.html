@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirPlop</title>
+    <link rel="icon" type="image/svg+xml" href="/images/icon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="stylesheet" href="/styles/glassmorphism.css">
+    <script src="/scripts/libs/jszip.min.js" defer></script>
+    <script src="/scripts/libs/qrcode.js" defer></script>
+    <script type="module" src="/scripts/main.js" defer></script>
+</head>
+<body>
+    <div class="ambient-bg" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-shell">
+        <header class="top-bar glass">
+            <div class="brand">
+                <img src="/images/icon.svg" alt="AirPlop">
+                <span data-i18n="app.title">AirPlop</span>
+            </div>
+            <div class="header-actions">
+                <button id="btn-pair" class="btn" type="button">
+                    <span>🔗</span>
+                    <span data-i18n="header.pairDevice">Pair Device</span>
+                </button>
+                <button id="btn-public-room" class="btn" type="button">
+                    <span>🌐</span>
+                    <span data-i18n="header.publicRoom">Public Room</span>
+                </button>
+                <button id="btn-lang" class="btn lang-pill" type="button" data-i18n-title="header.language">EN</button>
+                <button id="btn-theme" class="btn btn-icon" type="button" title="Theme">🌗</button>
+                <button id="btn-about" class="btn btn-icon" type="button" data-i18n-title="header.about">ℹ️</button>
+            </div>
+        </header>
+
+        <main class="stage">
+            <div class="radar-container">
+                <div class="radar-rings" aria-hidden="true">
+                    <div class="radar-ring"></div>
+                    <div class="radar-ring"></div>
+                    <div class="radar-ring"></div>
+                </div>
+
+                <div id="peers-grid" class="peers-grid"></div>
+
+                <div id="empty-state" class="empty-state glass">
+                    <h2 data-i18n="discovery.emptyTitle">Open AirPlop on other devices to send files</h2>
+                    <p data-i18n="discovery.emptyHint">Devices on the same Wi-Fi appear automatically. Use Pair Device or Public Room for different networks.</p>
+                </div>
+            </div>
+            <input id="file-input" type="file" multiple hidden>
+        </main>
+
+        <footer class="self-footer glass">
+            <div>
+                <span data-i18n="discovery.youAreKnownAs">You are known as</span>
+                <button id="btn-self-name" class="self-name-btn" type="button" data-i18n-title="discovery.editName">...</button>
+            </div>
+            <div id="self-device" class="self-device-label"></div>
+            <div id="active-room-banner" class="self-device-label" style="display:none;"></div>
+        </footer>
+    </div>
+
+    <div id="drop-overlay" class="drop-overlay glass-strong" data-i18n="discovery.dropHint">
+        Drop files anywhere or click a device to send
+    </div>
+
+    <!-- Send Text Modal -->
+    <div id="modal-send-text" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.sendTextTitle">Send a Message</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <textarea id="send-text-input" class="textarea-glass" data-i18n-placeholder="modal.sendTextPlaceholder"></textarea>
+            <div class="modal-actions">
+                <button class="btn" data-close-modal type="button" data-i18n="modal.cancel">Cancel</button>
+                <button id="btn-confirm-send-text" class="btn btn-primary" type="button" data-i18n="modal.sendTextButton">Send (Ctrl+Enter)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receive Text Modal -->
+    <div id="modal-receive-text" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.receiveTextTitle">Message Received</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <textarea id="receive-text-output" class="textarea-glass" readonly></textarea>
+            <div class="modal-actions">
+                <button class="btn" data-close-modal type="button" data-i18n="modal.close">Close</button>
+                <button id="btn-copy-text" class="btn btn-primary" type="button" data-i18n="modal.copyText">Copy Text</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receive Files Modal -->
+    <div id="modal-receive-files" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.receiveFilesTitle">Incoming Transfer</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <div id="receive-files-meta" style="font-size:0.9rem;"></div>
+            <div id="receive-files-list" class="paired-list"></div>
+            <div class="modal-actions">
+                <button id="btn-decline-files" class="btn btn-danger" type="button" data-i18n="modal.decline">Decline</button>
+                <button id="btn-accept-files" class="btn btn-primary" type="button" data-i18n="modal.accept">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pair Device Modal -->
+    <div id="modal-pair" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.pairTitle">Pair Devices</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);" data-i18n="modal.pairDesc"></p>
+            <button id="btn-generate-pair" class="btn btn-primary" type="button" data-i18n="modal.pairGenerate">Generate Pairing Code</button>
+            <div id="pair-code-section" style="display:none;">
+                <p style="font-size:0.82rem;margin-bottom:6px;" data-i18n="modal.pairCodeLabel"></p>
+                <div id="pair-code-value" class="code-display"></div>
+                <div id="pair-qr" class="qr-box" style="margin-top:10px;"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <input id="pair-join-input" class="input-glass" maxlength="6" data-i18n-placeholder="modal.pairInputPlaceholder">
+                <button id="btn-join-pair" class="btn btn-primary" type="button" data-i18n="modal.pairJoin">Pair</button>
+            </div>
+            <div>
+                <div style="font-size:0.85rem;font-weight:600;margin-bottom:6px;" data-i18n="modal.pairedListTitle">Paired Devices</div>
+                <div id="paired-devices-list" class="paired-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Public Room Modal -->
+    <div id="modal-public-room" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.publicRoomTitle">Temporary Public Room</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-secondary);" data-i18n="modal.publicRoomDesc"></p>
+            <button id="btn-create-public-room" class="btn btn-primary" type="button" data-i18n="modal.publicRoomCreate">Create Room</button>
+            <div id="public-room-active-box" style="display:none;">
+                <div id="public-room-code-value" class="code-display"></div>
+                <div id="public-room-qr" class="qr-box" style="margin-top:10px;"></div>
+                <button id="btn-leave-public-room" class="btn btn-danger" style="width:100%;margin-top:10px;" type="button" data-i18n="modal.publicRoomLeave">Leave Room</button>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <input id="public-room-input" class="input-glass" maxlength="5" style="text-transform:uppercase;" data-i18n-placeholder="modal.publicRoomInputPlaceholder">
+                <button id="btn-join-public-room" class="btn btn-primary" type="button" data-i18n="modal.publicRoomJoin">Join Room</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="modal-rename" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.renameTitle">Change Display Name</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <input id="rename-input" class="input-glass" maxlength="40" data-i18n-placeholder="modal.renamePlaceholder">
+            <div class="modal-actions">
+                <button class="btn" data-close-modal type="button" data-i18n="modal.cancel">Cancel</button>
+                <button id="btn-save-rename" class="btn btn-primary" type="button" data-i18n="modal.save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="modal-about" class="modal-backdrop">
+        <div class="modal-card glass-strong">
+            <div class="modal-header">
+                <h3 data-i18n="modal.aboutTitle">About AirPlop</h3>
+                <button class="btn btn-icon" data-close-modal type="button">✕</button>
+            </div>
+            <p style="font-size:0.9rem;line-height:1.55;" data-i18n="modal.aboutDesc"></p>
+            <p style="font-size:0.8rem;color:var(--text-secondary);" data-i18n="modal.aboutShortcuts"></p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" data-close-modal type="button" data-i18n="modal.close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+</body>
+</html>
