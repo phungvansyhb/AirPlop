@@ -24,7 +24,8 @@ npm test
 ```
 
 ## AI-DLC Documentation
-Full lifecycle documentation following the **AI-Driven Development Life Cycle (AIDLC)** standard is located in [`aidlc-docs/`](./aidlc-docs/aidlc-state.md):
-- **Inception:** `requirements.md`, `user-stories.md`, `application-design.md`, `execution-plan.md`
-- **Construction:** `functional-design.md`, `nfr-requirements.md`, `code-generation-plan.md`, `build-and-test.md`
-- **Operations:** `deployment.md`, `runbook.md`
+Full lifecycle governance and documentation following the **AI-Driven Development Life Cycle (AI-DLC)** standard (`AGENTS.md`, `instructions/`, and [`aidlc-docs/`](./aidlc-docs/aidlc-state.md)):
+- **Steering Rules:** [`AGENTS.md`](./AGENTS.md) & [`instructions/`](./instructions/core-workflow.md)
+- **Inception:** `inception/requirements/requirements.md`, `inception/user-stories/user-stories.md`, `inception/application-design/architecture.md`, `inception/application-design/ui-design.md`, `inception/units/units.md`, `inception/plans/execution-plan.md`
+- **Construction:** `construction/plans/construction-plan.md`
+- **Operations:** `operations/release-and-packaging.md`

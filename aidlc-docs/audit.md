@@ -9,3 +9,5 @@
 | 2026-11-18T00:37:43-08:00 | Construction | AI Agent | Initialized Node.js project (`package.json`) and installed dependencies | `package.json`, `package-lock.json` |
 | 2026-11-18T00:38:00-08:00 | Construction | AI Agent | Generated AIDLC Inception, Construction, and Operations documentation | `aidlc-docs/` |
 | 2026-11-18T00:41:33-08:00 | Construction | AI Agent | Implemented full backend, Glassmorphism frontend, EN/VI i18n, PWA, Docker, and tests; `npm test` passed 4/4 | `server/`, `public/`, `tests/airplop.test.js` |
+| 2026-11-18T17:43:10-08:00 | Operations / Governance | User + AI Agent | Standardized AI-DLC steering (`AGENTS.md`, `instructions/`) and migrated `aidlc-docs/` to standard directory layout; removed superseded flat instruction/doc files | `AGENTS.md`, `instructions/**`, `aidlc-docs/**` |
+| 2026-11-18T17:46:39-08:00 | Operations / Release | User + AI Agent | Committed and pushed standardized AI-DLC governance (`AGENTS.md`, `instructions/`, `aidlc-docs/`) to `origin/main` | `git commit`, `git push` |

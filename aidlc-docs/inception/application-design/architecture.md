@@ -1,6 +1,11 @@
-# Application Design (`application-design.md`)
+# Application Architecture & Technical Design (`architecture.md`)
 
-## 1. High-Level Architecture
+- **Phase**: `INCEPTION`
+- **Stage**: `Application Design`
+
+---
+
+## 1. High-Level System Architecture
 
 ```mermaid
 flowchart TB
@@ -36,6 +41,8 @@ flowchart TB
     RTCB -.->|"Relay if Symmetric NAT"| TURN
 ```
 
+---
+
 ## 2. Signaling & File Transfer Sequence
 
 ```mermaid
@@ -51,15 +58,29 @@ sequenceDiagram
     A->>B: WebRTC Offer / ICE (relayed via S)
     B->>A: WebRTC Answer / ICE (relayed via S)
     Note over A,B: Direct RTCDataChannel Established
-    A->>B: transfer-request (file metadata)
+    A->>B: request (file metadata)
     B-->>A: files-transfer-response (accepted: true)
     loop 64 KB Chunks
         A->>B: binary chunk (ArrayBuffer)
     end
     A->>B: file-transfer-complete
-    B-->>A: transfer-completed-ack
 ```
 
-## 3. Component Boundaries
-- **Server (`server/`):** Zero business-data persistence. Only maintains active WebSocket connections, ephemeral room maps (`ip`, `secret`, `public`), and relays JSON signaling messages.
-- **Client (`public/scripts/`):** Modular ES6 architecture separating signaling/WebRTC (`network.js`), IndexedDB (`persistent-storage.js`), localization (`localization.js`), UI rendering (`ui.js`), and bootstrap (`main.js`).
+---
+
+## 3. Component Boundaries & Data Contracts
+
+### 3.1 Module Map
+- **`server/`**: Express HTTP static/config server (`server.js`, `index.js`), peer IP normalization & UA parsing (`peer.js`, `helper.js`), and WebSocket signaling/room hub (`ws-server.js`).
+- **`public/scripts/`**: Signaling & WebRTC session manager (`network.js`), `IndexedDB` wrapper (`persistent-storage.js`), dynamic EN/VI translator (`localization.js`), Glassmorphism UI controller (`ui.js`), and PWA bootstrapper (`main.js`).
+- **`tests/`**: Automated Node test runner suite (`airplop.test.js`).
+
+### 3.2 WebSocket Signaling & IndexedDB Contracts
+- **Rooms**: `ip` (derived from normalized client IP), `secret` (64-char hex paired device token), `public` (5-letter uppercase room code).
+- **IndexedDB (`airplop-db` / `roomSecrets`)**: `{ secret, displayName, deviceName, createdAt }` keyed by `secret`.
+- **WebRTC Chunking**: `64,000` bytes (`CHUNK_SIZE`), `bufferedAmountLowThreshold = 256 KB`, flow-paused if `bufferedAmount > 1 MB`.
+
+### 3.3 Security, Isolation & Failure Modes
+- Mandatory DTLS encryption on `RTCDataChannel`; zero server-side file persistence.
+- `ws-chunk` base64 fallback available when `WS_FALLBACK=true` if WebRTC fails.
+- Per-peer rate limit (`10` pairing attempts / `10s`) and optional Express rate limiter.
